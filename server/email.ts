@@ -1,5 +1,8 @@
 import * as brevo from "@getbrevo/brevo";
 
+// Sender/reply-to for Brevo emails. Set SENDER_EMAIL to an address verified in Brevo.
+const SENDER_EMAIL = process.env.SENDER_EMAIL || "contacto@victorgomezcoach.com";
+
 const apiInstance = new brevo.TransactionalEmailsApi();
 apiInstance.setApiKey(
   brevo.TransactionalEmailsApiApiKeys.apiKey,
@@ -349,10 +352,10 @@ export async function sendAssessmentEmail(data: EmailData): Promise<{ success: b
     sendSmtpEmail.htmlContent = generateEmailHtml(data);
     sendSmtpEmail.sender = { 
       name: "ADAPTY - Victor Gomez Coach", 
-      email: "contacto@victorgomezcoach.com" 
+      email: SENDER_EMAIL 
     };
     sendSmtpEmail.to = [{ email: data.email }];
-    sendSmtpEmail.replyTo = { email: "contacto@victorgomezcoach.com" };
+    sendSmtpEmail.replyTo = { email: SENDER_EMAIL };
 
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log(`Email sent successfully to ${data.email}, messageId: ${result.body.messageId}`);
@@ -511,7 +514,7 @@ export async function sendPlanLeadNotification(lead: PlanLeadNotificationData): 
     sendSmtpEmail.htmlContent = htmlContent;
     sendSmtpEmail.sender = { 
       name: "ADAPTY Leads", 
-      email: "contacto@victorgomezcoach.com" 
+      email: SENDER_EMAIL 
     };
     sendSmtpEmail.to = [{ email: adminEmail }];
     sendSmtpEmail.replyTo = { email: lead.email };
