@@ -584,24 +584,6 @@ export async function registerRoutes(
     }
   });
 
-  // Get assessments by email - for retrieving past reports
-  app.get("/api/assessments/by-email/:email", async (req, res) => {
-    try {
-      const email = decodeURIComponent(req.params.email);
-      
-      if (!email || !email.includes("@")) {
-        res.status(400).json({ error: "Invalid email" });
-        return;
-      }
-
-      const assessments = await storage.getAssessmentsByEmail(email);
-      res.json(assessments);
-    } catch (error) {
-      console.error("Error fetching assessments by email:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
   // ============================================
   // B2B ENTERPRISE ROUTES
   // ============================================

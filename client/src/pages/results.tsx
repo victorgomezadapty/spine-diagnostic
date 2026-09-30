@@ -14,6 +14,7 @@ import {
   AlertCircle,
   ArrowRight,
   Home,
+  Download,
   Briefcase,
   Heart,
   Brain,
@@ -36,6 +37,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSelector } from "@/components/language-selector";
 import type { Assessment, Recommendation } from "@shared/schema";
+import { calculateSpineAge, downloadReportPdf } from "@/lib/report-pdf";
 
 // Icon mapping for recommendations
 const iconMap: Record<string, LucideIcon> = {
@@ -141,20 +143,6 @@ const getRiskIcon = (level: string) => {
       return AlertTriangle;
     default:
       return AlertCircle;
-  }
-};
-
-// Calculate spine age based on risk score and real age
-const calculateSpineAge = (realAge: number, totalScore: number, riskLevel: string): number => {
-  if (riskLevel === "low") {
-    // Good: spine age is same or younger
-    return Math.max(18, realAge - Math.floor((100 - totalScore) / 20));
-  } else if (riskLevel === "medium") {
-    // Moderate: spine age is 5-10 years older
-    return realAge + 5 + Math.floor(totalScore / 20);
-  } else {
-    // High: spine age is 10-20 years older
-    return realAge + 10 + Math.floor(totalScore / 10);
   }
 };
 
@@ -429,6 +417,7 @@ export default function Results() {
     newAssessment: "Nueva Evaluación",
     backHome: "Volver al Inicio",
     globalScore: "Puntuación Global",
+    downloadPdf: "Descargar informe en PDF",
     riskProfile: "Tu Perfil de Riesgo",
     riskProfileDesc: "Evaluación segmentada por tipo de factor",
     mechanicalRisk: "Riesgo Mecánico",
@@ -554,6 +543,7 @@ export default function Results() {
     newAssessment: "New Assessment",
     backHome: "Back to Home",
     globalScore: "Global Score",
+    downloadPdf: "Download PDF report",
     riskProfile: "Your Risk Profile",
     riskProfileDesc: "Segmented assessment by factor type",
     mechanicalRisk: "Mechanical Risk",
@@ -837,6 +827,16 @@ export default function Results() {
                   {txt.globalScore}: {assessment.totalScore}/100
                 </Badge>
               )}
+              <div>
+                <Button
+                  variant="outline"
+                  onClick={() => downloadReportPdf(assessment, assessmentLanguage)}
+                  data-testid="button-download-pdf"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {txt.downloadPdf}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

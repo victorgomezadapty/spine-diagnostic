@@ -1,3 +1,4 @@
+import { saveReport } from "@/lib/my-reports";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -436,6 +437,7 @@ export default function Assessment() {
         }).catch((err) => console.error("Failed to create plan lead:", err));
       }
 
+      saveReport({ id: data.id, createdAt: new Date().toISOString(), riskLevel, totalScore });
       navigate(`/results/${data.id}?leadCaptured=true`);
     },
     onError: (error: Error) => {
