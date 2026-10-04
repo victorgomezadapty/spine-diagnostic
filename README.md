@@ -1,6 +1,8 @@
-# Spine Diagnostic (ADAPTY)
+# Spine Diagnostic
 
 Back pain risk assessment tool. A short questionnaire inspired by the STarT Back approach produces a risk level, a segmented risk profile (mechanical, recovery, psychosocial), a "spine age" visualization, personalized recommendations and a downloadable PDF report. Includes a B2B module where companies can estimate the cost of back pain in their workforce.
+
+Built within ADAPTY's experimentation ecosystem as a functional prototype. It is not an officially integrated ADAPTY product.
 
 **Live demo:** https://spine-diagnostic-six.vercel.app
 
