@@ -28,7 +28,7 @@ async function main() {
   await esbuild({
     entryPoints: ["server/vercel.ts"],
     platform: "node",
-    target: "node20",
+    target: "node24",
     bundle: true,
     format: "cjs",
     outfile: `${fn}/index.js`,
@@ -39,7 +39,7 @@ async function main() {
   await writeFile(`${fn}/package.json`, JSON.stringify({ type: "commonjs" }));
   await writeFile(
     `${fn}/.vc-config.json`,
-    JSON.stringify({ runtime: "nodejs20.x", handler: "index.js", launcherType: "Nodejs" }),
+    JSON.stringify({ runtime: "nodejs24.x", handler: "index.js", launcherType: "Nodejs" }),
   );
 
   await writeFile(
