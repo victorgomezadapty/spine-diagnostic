@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from "react";
+import { useLocation } from "wouter";
 import { type Language, type Translations, getTranslation, translations } from "@/lib/translations";
 
 interface LanguageContextType {
@@ -7,8 +8,8 @@ interface LanguageContextType {
   t: Translations;
 }
 
-const defaultLanguage: Language = "es";
-const defaultTranslations = translations.es as Translations;
+const defaultLanguage: Language = "en";
+const defaultTranslations = translations.en as Translations;
 
 const LanguageContext = createContext<LanguageContextType>({
   language: defaultLanguage,
@@ -16,61 +17,56 @@ const LanguageContext = createContext<LanguageContextType>({
   t: defaultTranslations,
 });
 
-function getSavedLanguage(): Language {
-  try {
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      const saved = localStorage.getItem("language");
-      if (saved === "es" || saved === "en") {
-        return saved;
-      }
-      if (typeof navigator !== "undefined" && navigator.language) {
-        const browserLang = navigator.language.slice(0, 2);
-        return browserLang === "es" ? "es" : "en";
-      }
-    }
-  } catch (error) {
-    console.warn("Failed to get saved language, using default:", error);
-  }
-  return defaultLanguage;
+function languageFromSearch(search: string): Language {
+  return new URLSearchParams(search).get("lang") === "es" ? "es" : defaultLanguage;
 }
 
-function saveLanguage(lang: Language): void {
-  try {
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      localStorage.setItem("language", lang);
-    }
-  } catch (error) {
-    console.warn("Failed to save language preference:", error);
+function readInitialLanguage(): Language {
+  if (typeof window === "undefined") return defaultLanguage;
+  return languageFromSearch(window.location.search);
+}
+
+function syncLanguageQuery(lang: Language): void {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  const current = url.searchParams.get("lang");
+  if (lang === "es") {
+    if (current === "es") return;
+    url.searchParams.set("lang", "es");
+  } else if (current === null) {
+    return;
+  } else {
+    url.searchParams.delete("lang");
+  }
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  const here = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (next !== here) {
+    window.history.replaceState(window.history.state, "", next);
   }
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>(defaultLanguage);
-  const [isHydrated, setIsHydrated] = useState(false);
+  // English unless the URL asks for Spanish. Ignore navigator.language and any
+  // saved localStorage value so the first paint matches the English link preview.
+  const [language, setLanguageState] = useState<Language>(readInitialLanguage);
+  const [pathname] = useLocation();
 
-  useEffect(() => {
-    const savedLang = getSavedLanguage();
-    setLanguageState(savedLang);
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (isHydrated) {
-      try {
-        document.documentElement.lang = language;
-      } catch (error) {
-        console.warn("Failed to set document language:", error);
-      }
+  useLayoutEffect(() => {
+    try {
+      document.documentElement.lang = language;
+    } catch (error) {
+      console.warn("Failed to set document language:", error);
     }
-  }, [language, isHydrated]);
+    syncLanguageQuery(language);
+  }, [language, pathname]);
 
   const setLanguage = (lang: Language) => {
     if (lang !== "es" && lang !== "en") {
       console.warn("Invalid language, using default:", lang);
-      lang = defaultLanguage;
+      setLanguageState(defaultLanguage);
+      return;
     }
     setLanguageState(lang);
-    saveLanguage(lang);
   };
 
   let t: Translations;
@@ -89,6 +85,5 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 }
 
 export function useLanguage() {
-  const context = useContext(LanguageContext);
-  return context;
+  return useContext(LanguageContext);
 }
